@@ -1,6 +1,8 @@
+"""config file to handle/validate environment variables required"""
 from pydantic_settings import BaseSettings #to perform validation/overriding our env vars
 
 class Settings(BaseSettings): #to make sure that all these env vars are properly set
+    """settings class to handle environment variables required"""
     database_hostname: str
     database_port: str
     database_password: str

@@ -1,13 +1,15 @@
-from .database import engine
+""""""
+# from .database import engine
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import models
+# from . import models
 
 from .routers import post, user, auth, vote
 
-models.Base.metadata.create_all(bind=engine) #to create our models when the app is starting
+# to create our models when the app is starting but commented when using alembic
+# models.Base.metadata.create_all(bind=engine)
 
 
 # creating instance of fastapi
@@ -32,6 +34,7 @@ app.include_router(vote.router)
 # path operation - route  in some other languages-
 @app.get("/") # decorator
 def root(): #async/sync plain function
+    """This is the root for Social Media API"""
     return {
         "message": "Welcome to my API!"
     } #fastapi automatically converts python dictionary to JSON and send to the client

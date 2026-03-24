@@ -1,6 +1,7 @@
+"""posts router file contains all required operation paths for posts"""
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from .. import models #to import our models
 from ..database import  get_db #import engine and sessionlocal
@@ -30,7 +31,7 @@ def get_posts(
     skip: int = 0,
     search: Optional[str] = ""
     ):
-    """get all posts with keyword/search and votes added"""
+    """get all posts with keyword/search/limit queries and votes added"""
     print(limit)
     # posts = db.query(models.Post).filter(
     #     or_(
@@ -55,6 +56,7 @@ def get_own_posts(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
+    """get own posts like for own personal profile"""
     own_posts = db.query(
         models.Post,
         func.count(models.Vote.post_id).label("votes")).join(
@@ -69,7 +71,11 @@ def get_own_posts(
     return own_posts
 
 @router.get("/{id}", response_model=PostWithVote)#to fetch specific post using path parameter, it is string here not integer
-def get_specififc_post(id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)): #this can be used to internally convert extracted str parameter to an integer id
+def get_specififc_post(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)): #this can be used to internally convert extracted str parameter to an integer id
+    """gets specific post with id"""
     fetched_post = db.query(
         models.Post,
         func.count(models.Vote.post_id).label("votes")).join(
@@ -90,6 +96,7 @@ def create_posts(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user) #creating a dependecy to make sure that user doing the request is authenticated
 ):
+    """create post operation path"""
     print(f"user_id: {current_user.id}")
     print(f"user_email: {current_user.email}")
 
@@ -103,13 +110,18 @@ def create_posts(
     return new_post
 
 
-@router.delete("/{id}", status_code=204)
-def delete_post(id: int, response: Response, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    post = db.query(models.Post).filter(models.Post.id == id)
+@router.delete("/{post_id}", status_code=204)
+def delete_post(
+    post_id: int,
+    response: Response,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)):
+    """delete post operation path"""
+    post = db.query(models.Post).filter(models.Post.id == post_id)
     if post.first() is None:
         raise HTTPException(
             status_code=404,
-            detail=f"post with id {id} not found."
+            detail=f"post with id {post_id} not found."
         )
     
     if post.first().owner_id != current_user.id: #type: ignore
